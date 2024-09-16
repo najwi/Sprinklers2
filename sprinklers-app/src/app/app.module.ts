@@ -20,38 +20,35 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { ConfirmationModalComponent } from './shared/confirmation-modal/confirmation-modal.component';
 import { RuleModalComponent } from './profiles/rule-modal/rule-modal.component';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
+import { SprinklerModalComponent } from './settings/sprinkler-modal/sprinkler-modal.component';
 
 @NgModule({
-	declarations: [
-		AppComponent,
-		ProfilesComponent,
-		SettingsComponent,
-		ProfileModalComponent,
-		ConfirmationModalComponent,
-		RuleModalComponent,
-	],
-	imports: [
-		BrowserModule,
-		AppRoutingModule,
-		BrowserAnimationsModule,
-		MatToolbarModule,
-		MatButtonModule,
-		MatExpansionModule,
-		MatTableModule,
-		MatCheckboxModule,
-		ReactiveFormsModule,
-		MatIconModule,
-		MatTooltipModule,
-		MatDialogModule,
-		MatFormFieldModule,
-		MatInputModule,
-		HttpClientModule,
-		MatSelectModule,
-		NgxMaterialTimepickerModule
-	],
-	providers: [],
-	bootstrap: [AppComponent],
+    declarations: [
+        AppComponent,
+        ProfilesComponent,
+        SettingsComponent,
+        ProfileModalComponent,
+        ConfirmationModalComponent,
+        RuleModalComponent,
+        SprinklerModalComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        MatToolbarModule,
+        MatButtonModule,
+        MatExpansionModule,
+        MatTableModule,
+        MatCheckboxModule,
+        ReactiveFormsModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        NgxMaterialTimepickerModule], providers: [provideHttpClient(withInterceptorsFromDi())]
 })
-export class AppModule {}
+export class AppModule { }

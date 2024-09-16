@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
 	MAT_DIALOG_DATA,
 	MatDialog,
@@ -6,9 +6,7 @@ import {
 } from '@angular/material/dialog';
 import { Profile } from '../profiles.dto';
 import {
-	Form,
 	FormBuilder,
-	FormControl,
 	FormGroup,
 	Validators,
 } from '@angular/forms';
