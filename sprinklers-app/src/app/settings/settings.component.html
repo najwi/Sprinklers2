@@ -1,1 +1,38 @@
-<p>settings works!</p>
+<h1>Ustawienia</h1>
+<h3>Definicje zraszaczy</h3>
+<table class="table">
+	<thead class="thead">
+		<tr>
+			<th>Nazwa</th>
+			<th>Pin</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr *ngFor="let sprinkler of sprinklersStore.items$ | async">
+			<td>{{ sprinkler.name }}</td>
+			<td>{{ sprinkler.pinNumber }}</td>
+			<td>
+				<button
+					mat-icon-button
+					color="primary"
+					matTooltip="Edytuj"
+					(click)="editSprinkler()"
+				>
+					<mat-icon>edit</mat-icon>
+				</button>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<div class="d-flex justify-content-end w-100 me-2">
+	<button
+		mat-stroked-button
+		color="primary"
+		class="mx-1"
+		(click)="addSprinkler()"
+	>
+		<mat-icon>add</mat-icon>
+		Dodaj zraszacz
+	</button>
+</div>

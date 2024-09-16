@@ -17,7 +17,7 @@ export class SprinklersStore {
 
         this.itemsSubject.next([
             {
-                id: 'wd3e4e',
+                id: 'f123121',
                 name: 'sprinklername1',
                 pinNumber: 2
             },

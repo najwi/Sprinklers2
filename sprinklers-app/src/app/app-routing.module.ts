@@ -4,10 +4,9 @@ import { ProfilesComponent } from './profiles/profiles.component';
 import { SettingsComponent } from './settings/settings.component';
 
 const routes: Routes = [
-	{ path: '', redirectTo: '/profiles', pathMatch: 'full' },
-	{ path: 'profiles', component: ProfilesComponent },
+	{ path: '', component: ProfilesComponent },
 	{ path: 'settings', component: SettingsComponent },
-	{ path: '**', redirectTo: '/profiles'}
+	{ path: '**', redirectTo: ''}
 ];
 
 @NgModule({

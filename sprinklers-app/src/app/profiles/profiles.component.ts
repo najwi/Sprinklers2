@@ -154,7 +154,9 @@ export class ProfilesComponent {
 		},
 	];
 
-	constructor(public dialog: MatDialog) {}
+	constructor(public dialog: MatDialog) {
+		console.log(window.location.origin);
+	}
 
 	openAddProfileModal(): void {
 		this.dialog.open(ProfileModalComponent, {

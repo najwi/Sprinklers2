@@ -84,10 +84,14 @@ export class RuleModalComponent {
 				if (nameControl?.value) return;
 
 				const name = sprinklers.items.find((x) => x.id === value)?.name;
-				nameControl?.patchValue(`Reguła-${name}`);
+				nameControl?.patchValue(`Reguła ${name}`);
 			});
 		
 		this.form.get(FormField.startTime)?.valueChanges.subscribe(x => console.log(x));
+	}
+
+	get showTooltip(): boolean{
+		return !this.form.get(FormField.name)?.value;
 	}
 
 	delete(): void {

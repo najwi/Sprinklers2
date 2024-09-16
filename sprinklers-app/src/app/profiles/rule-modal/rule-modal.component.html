@@ -3,8 +3,8 @@
 	<mat-dialog-content>
 		<form [formGroup]="form" class="d-flex flex-column">
 			<mat-form-field
-				[matTooltip]="
-					'Wybierz zraszacz, żeby wygenerować domyślną nazwę'
+				[matTooltip]=" showTooltip ?
+					'Wybierz zraszacz, żeby wygenerować domyślną nazwę' : ''
 				"
 				[matTooltipPosition]="'right'"
 			>

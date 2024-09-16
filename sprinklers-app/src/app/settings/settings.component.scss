@@ -1,0 +1,8 @@
+td, th{
+	vertical-align: middle;
+    padding: 0.4rem;
+
+	@media (max-width: 576px) {
+		padding: 1px;
+	}
+}
