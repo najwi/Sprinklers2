@@ -6,13 +6,13 @@
 				<mat-label>Nazwa</mat-label>
 				<input matInput [formControlName]="fields.name" />
 			</mat-form-field>
-			<mat-checkbox [formControlName]="fields.isActive"
-				>Aktywny</mat-checkbox
-			>
+			<mat-checkbox [formControlName]="fields.isActive">Aktywny</mat-checkbox>
 		</form>
 	</mat-dialog-content>
 	<mat-dialog-actions [align]="'end'">
-        <button *ngIf="mode===modes.Edit" mat-stroked-button color="warn" (click)="delete()">Usuń</button>
+		@if (mode===modes.Edit) {
+		<button mat-stroked-button color="warn" (click)="delete()">Usuń</button>
+		}
 		<button mat-stroked-button color="primary" mat-dialog-close>
 			Anuluj
 		</button>

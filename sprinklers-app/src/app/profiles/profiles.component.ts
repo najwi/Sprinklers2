@@ -154,7 +154,7 @@ export class ProfilesComponent {
 		},
 	];
 
-	constructor(public dialog: MatDialog) {
+	constructor(private readonly dialog: MatDialog) {
 		console.log(window.location.origin);
 	}
 
