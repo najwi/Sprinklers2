@@ -1,17 +1,16 @@
-import { Sprinkler } from "../settings/settings.dto";
-
 export interface Profile {
+	id: string;
 	name: string;
 	isActive: boolean;
 	rules: Rule[];
 }
 
 export interface Rule {
-    sprinkler: Sprinkler;
+	sprinklerId: string;
 	name: string;
 	isActive: boolean;
 	startTime: string;
 	endTime: string;
-    isManualOn: boolean;
-    manualTime: string;
+	isManualOn: boolean;
+	manualTime: string;
 }

@@ -7,9 +7,12 @@ import { AfterViewInit, Component } from '@angular/core';
 })
 export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
-    const loader = document.getElementById('loading-screen');
-    if (loader) {
-      loader.style.display = 'none';
-    }
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('loader-box');
+      if (loader) {
+        loader.classList.add('hidden');
+        setTimeout(() => loader.style.display = 'none', 500);
+      }
+    });
   }
 }

@@ -14,6 +14,8 @@ import {
 	ConfirmationModalComponent,
 	ConfirmationModalData,
 } from 'src/app/shared/confirmation-modal/confirmation-modal.component';
+import { v4 as uuidv4 } from 'uuid';
+import { ProfilesStore } from '../profiles.store';
 
 @Component({
 	selector: 'app-profile-modal',
@@ -32,7 +34,8 @@ export class ProfileModalComponent {
 		private data: { mode: PorfileModalMode; profile?: Profile },
 		private dialogRef: MatDialogRef<ProfileModalComponent>,
 		private fb: FormBuilder,
-		private dialog: MatDialog
+		private dialog: MatDialog,
+		private profilesStore: ProfilesStore
 	) {
 		this.mode = data.mode;
 
@@ -53,6 +56,25 @@ export class ProfileModalComponent {
 		});
 	}
 
+	save() {
+		if (!this.form.valid) return;
+
+		if (this.mode === PorfileModalMode.Add) {
+			const profile: Profile = {
+				id: uuidv4(),
+				isActive: this.form.get(FormField.isActive)!.value,
+				name: this.form.get(FormField.name)!.value,
+				rules: []
+			}
+			this.profilesStore.create(profile).subscribe(x => this.dialogRef.close());
+		} else {
+			const profile = this.data.profile!;
+			profile.isActive = this.form.get(FormField.isActive)!.value;
+			profile.name = this.form.get(FormField.name)!.value;
+			this.profilesStore.edit(profile).subscribe(x => this.dialogRef.close());
+		}
+	}
+
 	delete(): void {
 		const data: ConfirmationModalData = {
 			content: `Czy na pewno chcesz usunąć profil "${this.data.profile?.name}"`,
@@ -67,8 +89,7 @@ export class ProfileModalComponent {
 			.afterClosed()
 			.subscribe((result) => {
 				if (result) {
-					//todo delete
-					this.dialogRef.close();
+					this.profilesStore.delete(this.data.profile!.id).subscribe(x => this.dialogRef.close());
 				}
 			});
 	}
