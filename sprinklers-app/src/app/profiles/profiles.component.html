@@ -1,98 +1,127 @@
 <h1>Profile</h1>
 
 <mat-accordion multi>
-  @for (profile of profiles; track profile) {
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-checkbox
-            [checked]="profile.isActive"
-            (click)="$event.stopPropagation()"
-            [formControl]="control"
-            style="margin-right: 0.3rem"
-          ></mat-checkbox>
-          {{ profile.name }}
-          <button mat-icon-button color="primary" matTooltip="Edytuj" class="ms-auto" (click)="openEditProfileModal(profile, $event)">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <table class="table w-100">
-        <thead>
-          <tr>
-            <th style="width: 1px; white-space: nowrap"></th>
-            <th>Nazwa</th>
-            <th>Czas</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (rule of profile.rules; track rule) {
-            <tr>
-              <td style="width: 1px; white-space: nowrap">
-                <mat-checkbox
-                  [checked]="rule.isActive"
-                  (click)="$event.stopPropagation()"
-                ></mat-checkbox>
-              </td>
-              <td>{{ rule.name }}</td>
-              <td>
-                <div class="d-block d-sm-inline">
-                  <div class="d-block d-sm-inline me-sm-2 mb-1">
-                    {{ rule.startTime }}-{{
-                    rule.endTime
-                    }}
-                  </div>
-                  <div class="d-block d-sm-inline">15min</div>
-                </div>
-              </td>
-              <td>
-                <div class="d-flex flex-nowrap">
-                  @if (!rule.isManualOn) {
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      matTooltip="Włącz ręcznie"
-                      >
-                      <mat-icon>play_arrow</mat-icon>
-                    </button>
-                  }
-                  @if (rule.isManualOn) {
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      matTooltip="Wyłącz ręcznie"
-                      >
-                      <mat-icon>stop</mat-icon>
-                    </button>
-                  }
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    matTooltip="Edytuj"
-                    (click)="openEditRuleModal(rule, $event)"
-                    >
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <div class="d-flex justify-content-end w-100 mt-1 mt-sm-2">
-        <button mat-stroked-button color="primary" class="mx-1" (click)="openAddRuleModal()">
-          <mat-icon>add</mat-icon>
-          Dodaj regułę
-        </button>
-      </div>
-    </mat-expansion-panel>
-  }
+	@for (profile of profilesStore.items$ | async; track profile) {
+	<mat-expansion-panel>
+		<mat-expansion-panel-header>
+			<mat-panel-title>
+				<mat-checkbox
+					[checked]="profile.isActive"
+					(click)="profileCheckboxClicked(profile.id, $event)"
+					style="margin-right: 0.3rem"
+				></mat-checkbox>
+				{{ profile.name }}
+				<button
+					mat-icon-button
+					color="primary"
+					matTooltip="Edytuj"
+					class="ms-auto"
+					(click)="openEditProfileModal(profile, $event)"
+				>
+					<mat-icon>edit</mat-icon>
+				</button>
+			</mat-panel-title>
+		</mat-expansion-panel-header>
+		@if(profile.rules.length === 0){
+		<h5>Brak reguł</h5>
+		} @else {
+		<table class="table w-100">
+			<thead>
+				<tr>
+					<th style="width: 1px; white-space: nowrap"></th>
+					<th>Nazwa</th>
+					<th>Czas</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@for (rule of profile.rules; track rule; let idx = $index) {
+				<tr>
+					<td style="width: 1px; white-space: nowrap">
+						<mat-checkbox
+							[checked]="rule.isActive"
+							(click)="
+								ruleCheckboxClicked(profile.id, idx, $event)
+							"
+						></mat-checkbox>
+					</td>
+					<td>{{ rule.name }}</td>
+					<td>
+						<div class="d-block d-sm-inline">
+							<div class="d-block d-sm-inline me-sm-2 mb-1">
+								{{ rule.startTime }}-{{ rule.endTime }}
+							</div>
+							<div class="d-block d-sm-inline">15min</div>
+						</div>
+					</td>
+					<td>
+						<div class="d-flex flex-nowrap">
+							@if (!rule.isManualOn) {
+							<button
+								mat-icon-button
+								color="primary"
+								matTooltip="Włącz ręcznie"
+								(click)="setManualOn(idx, $event)"
+							>
+								<mat-icon>play_arrow</mat-icon>
+							</button>
+							} @if (rule.isManualOn) {
+							<button
+								mat-icon-button
+								color="warn"
+								matTooltip="Wyłącz ręcznie"
+								(click)="setManualOff(idx, $event)"
+							>
+								<mat-icon>stop</mat-icon>
+							</button>
+							}
+							<button
+								mat-icon-button
+								color="primary"
+								matTooltip="Edytuj"
+								(click)="
+									openEditRuleModal(
+										rule,
+										profile,
+										idx,
+										$event
+									)
+								"
+							>
+								<mat-icon>edit</mat-icon>
+							</button>
+						</div>
+					</td>
+				</tr>
+				}
+			</tbody>
+		</table>
+		}
+		<div class="d-flex justify-content-end w-100 mt-1 mt-sm-2">
+			<button
+				mat-stroked-button
+				color="primary"
+				class="mx-1"
+				(click)="openAddRuleModal(profile)"
+			>
+				<mat-icon>add</mat-icon>
+				Dodaj regułę
+			</button>
+		</div>
+	</mat-expansion-panel>
+	} @empty {
+	<h3>Lista profili jest pusta</h3>
+	}
 </mat-accordion>
 
 <div class="d-flex justify-content-end w-100 mt-2">
-  <button mat-stroked-button color="primary" class="mx-1" (click)="openAddProfileModal()">
-    <mat-icon>add</mat-icon>
-    Dodaj profil
-  </button>
+	<button
+		mat-stroked-button
+		color="primary"
+		class="mx-1"
+		(click)="openAddProfileModal()"
+	>
+		<mat-icon>add</mat-icon>
+		Dodaj profil
+	</button>
 </div>

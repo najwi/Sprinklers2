@@ -18,11 +18,14 @@ import { ProfileModalComponent } from './profiles/profile-modal/profile-modal.co
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar'; 
 import { ConfirmationModalComponent } from './shared/confirmation-modal/confirmation-modal.component';
 import { RuleModalComponent } from './profiles/rule-modal/rule-modal.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { SprinklerModalComponent } from './settings/sprinkler-modal/sprinkler-modal.component';
+import { ErrorInterceptorService } from './interceptors/error-interceptor.service';
+
 
 @NgModule({
     declarations: [
@@ -34,7 +37,8 @@ import { SprinklerModalComponent } from './settings/sprinkler-modal/sprinkler-mo
         RuleModalComponent,
         SprinklerModalComponent
     ],
-    bootstrap: [AppComponent], imports: [BrowserModule,
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         AppRoutingModule,
         BrowserAnimationsModule,
         MatToolbarModule,
@@ -49,6 +53,12 @@ import { SprinklerModalComponent } from './settings/sprinkler-modal/sprinkler-mo
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
-        NgxMaterialTimepickerModule], providers: [provideHttpClient(withInterceptorsFromDi())]
+        MatSnackBarModule,
+        NgxMaterialTimepickerModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), {
+        provide: HTTP_INTERCEPTORS,
+        useClass: ErrorInterceptorService,
+        multi: true
+    }],
 })
 export class AppModule { }

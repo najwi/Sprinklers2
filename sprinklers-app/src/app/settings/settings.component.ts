@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
 import { Sprinkler } from './settings.dto';
 import { SprinklersStore } from './sprinklers.store';
 import { MatDialog } from '@angular/material/dialog';

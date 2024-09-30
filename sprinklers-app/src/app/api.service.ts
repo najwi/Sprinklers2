@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Sprinkler } from './settings/settings.dto';
+import { Profile } from './profiles/profiles.dto';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-    baseUrl = window.location.origin;
+    baseUrl = window.location.origin + "/api";
     constructor(private readonly httpClient: HttpClient) { }
 
     getSprinklers(): Observable<Sprinkler[]> {
@@ -13,14 +14,30 @@ export class ApiService {
     }
 
     deleteSprinkler(id: string): Observable<void> {
-        return this.httpClient.delete<never>(`${this.baseUrl}/sprinklers/${id}`)
+        return this.httpClient.delete<void>(`${this.baseUrl}/sprinklers`, { params: { "id": id } })
     }
 
-    postSprinkler(name: string, pinNumber: number): Observable<Sprinkler> {
-        return this.httpClient.post<Sprinkler>(`${this.baseUrl}/sprinklers`, { name, pinNumber });
+    postSprinkler(sprinkler: Sprinkler): Observable<void> {
+        return this.httpClient.post<void>(`${this.baseUrl}/sprinklers`, sprinkler);
     }
 
-    putSprinkler(id: string, name: string, pinNumber: number): Observable<Sprinkler> {
-        return this.httpClient.put<Sprinkler>(`${this.baseUrl}/sprinklers/${id}`, { name, pinNumber });
+    putSprinkler(id: string, name: string, pinNumber: number): Observable<void> {
+        return this.httpClient.put<void>(`${this.baseUrl}/sprinklers`, { name, pinNumber }, { params: { "id": id } });
+    }
+
+    getProfiles(): Observable<Profile[]> {
+        return this.httpClient.get<Profile[]>(`${this.baseUrl}/profiles`);
+    }
+
+    deleteProfile(id: string): Observable<void> {
+        return this.httpClient.delete<void>(`${this.baseUrl}/profiles`, {params: { "id": id }});
+    }
+
+    postProfile(profile: Profile): Observable<void> {
+        return this.httpClient.post<void>(`${this.baseUrl}/profiles`, profile);
+    }
+
+    putProfile(profile: Profile): Observable<void> {
+        return this.httpClient.put<void>(`${this.baseUrl}/profiles`, profile);
     }
 }

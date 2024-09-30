@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { Profile, Rule } from './profiles.dto';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -7,6 +7,7 @@ import {
 	ProfileModalComponent,
 } from './profile-modal/profile-modal.component';
 import { RuleModalComponent, RuleModalMode } from './rule-modal/rule-modal.component';
+import { ProfilesStore } from './profiles.store';
 
 @Component({
 	selector: 'app-profiles',
@@ -14,148 +15,38 @@ import { RuleModalComponent, RuleModalMode } from './rule-modal/rule-modal.compo
 	styleUrls: ['./profiles.component.scss'],
 })
 export class ProfilesComponent {
-	control: FormControl = new FormControl(true);
+	constructor(private readonly dialog: MatDialog, public readonly profilesStore: ProfilesStore, private fb: FormBuilder) {
+	}
 
-	profiles: Profile[] = [
-		{
-			name: 'Profil 1',
-			isActive: true,
-			rules: [
-				{
-					name: 'Zgorzelcka',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: true,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'srodek',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: false,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem ",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'Za mostkiem',
-					isActive: false,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: false,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-			],
-		},
-		{
-			name: 'Profil 2',
-			isActive: false,
-			rules: [
-				{
-					name: 'Zgorzelcka',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: true,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'srodek',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					manualTime: "1",
-					isManualOn: false,
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'Za mostkiem',
-					isActive: false,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: false,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-			],
-		},
-		{
-			name: 'Profil 3',
-			isActive: true,
-			rules: [
-				{
-					name: 'Zgorzelcka',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: true,
-					manualTime: "1",
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'srodek',
-					isActive: true,
-					startTime: '10:15',
-					endTime: '10:30',
-					manualTime: "1",
-					isManualOn: false,
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-				{
-					name: 'Za mostkiem',
-					manualTime: "1",
-					isActive: false,
-					startTime: '10:15',
-					endTime: '10:30',
-					isManualOn: false,
-					sprinkler: {
-						id: "f123121",
-						name: "Za mostkiem",
-						pinNumber: 1
-					}
-				},
-			],
-		},
-	];
+	setManualOn(ruleIdx: number, $event: MouseEvent) {
+		$event.stopPropagation();
+	}
+	setManualOff(ruleIdx: number, $event: MouseEvent) {
+		$event.stopPropagation();
+	}
 
-	constructor(private readonly dialog: MatDialog) {
-		console.log(window.location.origin);
+	profileCheckboxClicked(id: string, $event: Event) {
+		$event.stopPropagation();
+		const profile = this.profilesStore.items.find(x => x.id === id);
+		if (!profile) {
+			console.error('Profile not found');
+			return;
+		}
+		profile.isActive = !profile.isActive;
+		this.profilesStore.edit(profile).subscribe();
+	}
+
+	ruleCheckboxClicked(profileId: string, ruleIdx: number, $event: Event) {
+		$event.stopPropagation();
+		const profile = this.profilesStore.items.find(x => x.id === profileId);
+		const rule = profile?.rules[ruleIdx];
+		if (!rule) {
+			console.error('Rule not found');
+			return;
+		}
+
+		rule.isActive = !rule.isActive;
+		this.profilesStore.edit(profile!).subscribe();
 	}
 
 	openAddProfileModal(): void {
@@ -171,16 +62,16 @@ export class ProfilesComponent {
 		});
 	}
 
-	openAddRuleModal(): void {
+	openAddRuleModal(profile: Profile): void {
 		this.dialog.open(RuleModalComponent, {
-			data: { mode: RuleModalMode.Add },
+			data: { mode: RuleModalMode.Add, profile: profile },
 		});
 	}
 
-	openEditRuleModal(rule: Rule, $event: Event): void {
+	openEditRuleModal(rule: Rule, profile: Profile, ruleIdx: number, $event: Event): void {
 		$event.stopPropagation();
 		this.dialog.open(RuleModalComponent, {
-			data: { mode: RuleModalMode.Edit, rule },
+			data: { mode: RuleModalMode.Edit, rule: rule, ruleIdx: ruleIdx, profile: profile },
 		});
 	}
 }

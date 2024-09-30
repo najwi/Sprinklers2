@@ -6,7 +6,9 @@
 				<mat-label>Nazwa</mat-label>
 				<input matInput [formControlName]="fields.name" />
 			</mat-form-field>
-			<mat-checkbox [formControlName]="fields.isActive">Aktywny</mat-checkbox>
+			<mat-checkbox [formControlName]="fields.isActive"
+				>Aktywny</mat-checkbox
+			>
 		</form>
 	</mat-dialog-content>
 	<mat-dialog-actions [align]="'end'">
@@ -16,6 +18,8 @@
 		<button mat-stroked-button color="primary" mat-dialog-close>
 			Anuluj
 		</button>
-		<button mat-raised-button color="accent">Zapisz</button>
+		<button mat-raised-button color="accent" (click)="save()">
+			Zapisz
+		</button>
 	</mat-dialog-actions>
 </div>
