@@ -1,29 +1,27 @@
-import { Component, Inject } from '@angular/core';
-import {
-	FormGroup,
-	FormBuilder,
-	Validators,
-} from '@angular/forms';
+import { Component, Inject } from "@angular/core";
+import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import {
 	MAT_DIALOG_DATA,
 	MatDialogRef,
 	MatDialog,
-} from '@angular/material/dialog';
+} from "@angular/material/dialog";
+import { ProfileModalComponent } from "../profile-modal/profile-modal.component";
+import { Profile, Rule } from "../profiles.dto";
+import { SprinklersStore } from "src/app/settings/sprinklers.store";
+import { Observable } from "rxjs";
+import { Sprinkler } from "src/app/settings/settings.dto";
+import { NgxMaterialTimepickerTheme } from "ngx-material-timepicker";
 import {
-	ProfileModalComponent,
-} from '../profile-modal/profile-modal.component';
-import { Profile, Rule } from '../profiles.dto';
-import { SprinklersStore } from 'src/app/settings/sprinklers.store';
-import { Observable } from 'rxjs';
-import { Sprinkler } from 'src/app/settings/settings.dto';
-import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
-import { ConfirmationModalComponent, ConfirmationModalData } from 'src/app/shared/confirmation-modal/confirmation-modal.component';
-import { ProfilesStore } from '../profiles.store';
+	ConfirmationModalComponent,
+	ConfirmationModalData,
+} from "src/app/shared/confirmation-modal/confirmation-modal.component";
+import { ProfilesStore } from "../profiles.store";
+import { toSeconds, toTime } from "src/app/shared/time-helper";
 
 @Component({
-	selector: 'app-rule-modal',
-	templateUrl: './rule-modal.component.html',
-	styleUrls: ['./rule-modal.component.scss'],
+	selector: "app-rule-modal",
+	templateUrl: "./rule-modal.component.html",
+	styleUrls: ["./rule-modal.component.scss"],
 })
 export class RuleModalComponent {
 	modes = RuleModalMode;
@@ -38,41 +36,46 @@ export class RuleModalComponent {
 
 	constructor(
 		@Inject(MAT_DIALOG_DATA)
-		private data: { mode: RuleModalMode; rule?: Rule; profile?: Profile, ruleIdx?: number },
+		private data: {
+			mode: RuleModalMode;
+			rule?: Rule;
+			profile?: Profile;
+			ruleIdx?: number;
+		},
 		private dialogRef: MatDialogRef<ProfileModalComponent>,
 		private fb: FormBuilder,
 		private dialog: MatDialog,
 		private sprinklers: SprinklersStore,
-		private profilesStore: ProfilesStore
+		private profilesStore: ProfilesStore,
 	) {
 		this.mode = data.mode;
 		this.sprinklers$ = sprinklers.items$;
 		this.setTheme();
 
 		this.title =
-			this.mode === RuleModalMode.Add ? 'Dodaj regułę' : 'Edytuj regułę';
+			this.mode === RuleModalMode.Add ? "Dodaj regułę" : "Edytuj regułę";
 
 		this.form = fb.group({
 			[FormField.sprinklerId]: fb.control(
 				data.rule?.sprinklerId,
-				Validators.required
+				Validators.required,
 			),
 			[FormField.name]: fb.control(data.rule?.name, Validators.required),
 			[FormField.isActive]: fb.control(
 				data.rule?.isActive ?? false,
-				Validators.required
+				Validators.required,
 			),
 			[FormField.startTime]: fb.control(
-				data.rule?.startTime,
-				Validators.required
+				toTime(data.rule?.startTime),
+				Validators.required,
 			),
 			[FormField.endTime]: fb.control(
-				data.rule?.endTime,
-				Validators.required
+				toTime(data.rule?.endTime),
+				Validators.required,
 			),
-			[FormField.manualTime]: fb.control(
-				data.rule?.manualTime ?? 5,
-				Validators.required
+			[FormField.manualDuration]: fb.control(
+				data.rule?.manualDuration ? data.rule.manualDuration / 60 : 5,
+				[Validators.required, Validators.min(1)],
 			),
 		});
 
@@ -93,34 +96,41 @@ export class RuleModalComponent {
 	}
 
 	save(): void {
-		if(!this.form.valid) return;
+		this.form.markAllAsTouched();
+		if (this.form.invalid) return;
 
 		const rule: Rule = {
 			isActive: this.form.get(FormField.isActive)!.value,
-			endTime: this.form.get(FormField.endTime)!.value,
-			manualTime: this.form.get(FormField.manualTime)!.value,
+			endTime: toSeconds(
+				this.form.get(FormField.endTime)!.value,
+			) as number,
+			startTime: toSeconds(
+				this.form.get(FormField.startTime)!.value,
+			) as number,
+			manualDuration: this.form.get(FormField.manualDuration)!.value * 60,
 			name: this.form.get(FormField.name)!.value,
 			sprinklerId: this.form.get(FormField.sprinklerId)!.value,
-			startTime: this.form.get(FormField.startTime)!.value,
-			isManualOn: this.data.rule?.isManualOn ?? false
-		}
+			manualStartTime: this.data.rule?.manualStartTime ?? -1,
+		};
 
 		const profile = this.data.profile!;
 
-		if(this.mode === RuleModalMode.Add){
+		if (this.mode === RuleModalMode.Add) {
 			profile.rules = [...profile.rules, rule];
-		}else{
+		} else {
 			profile.rules[this.data.ruleIdx!] = rule;
 		}
 
-		this.profilesStore.edit(profile).subscribe(x => this.dialogRef.close());
+		this.profilesStore
+			.edit(profile)
+			.subscribe((x) => this.dialogRef.close());
 	}
 
 	delete(): void {
 		const data: ConfirmationModalData = {
 			content: `Czy na pewno chcesz usunąć regułę "${this.data.rule?.name}"`,
-			confirmationColor: 'warn',
-			title: 'Usuń regułę',
+			confirmationColor: "warn",
+			title: "Usuń regułę",
 		};
 
 		this.dialog
@@ -131,16 +141,19 @@ export class RuleModalComponent {
 			.subscribe((result) => {
 				if (result) {
 					const profile = this.data.profile!;
-					profile.rules = profile.rules.filter((_, idx) => idx !== this.data.ruleIdx);
-					this.profilesStore.edit(profile)
-						.subscribe(x => this.dialogRef.close());
+					profile.rules = profile.rules.filter(
+						(_, idx) => idx !== this.data.ruleIdx,
+					);
+					this.profilesStore
+						.edit(profile)
+						.subscribe((x) => this.dialogRef.close());
 				}
 			});
 	}
 
 	private setTheme(): void {
-		const accentColor = '#ff4081';
-		const primaryColor = '#3f51b5';
+		const accentColor = "#ff4081";
+		const primaryColor = "#3f51b5";
 
 		this.timePickerTheme = {
 			clockFace: { clockHandColor: accentColor },
@@ -151,12 +164,12 @@ export class RuleModalComponent {
 }
 
 export enum FormField {
-	name = 'name',
-	isActive = 'isActive',
-	sprinklerId = 'sprinklerId',
-	startTime = 'startTime',
-	endTime = 'endTime',
-	manualTime = 'manualTime',
+	name = "name",
+	isActive = "isActive",
+	sprinklerId = "sprinklerId",
+	startTime = "startTime",
+	endTime = "endTime",
+	manualDuration = "manualDuration",
 }
 
 export enum RuleModalMode {

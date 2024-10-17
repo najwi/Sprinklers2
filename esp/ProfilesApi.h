@@ -16,6 +16,7 @@ void getAllProfilesJson(String& json){
 void saveProfilesConfig(){
   String json;
   getAllProfilesJson(json);
+  DEBUG_PRINTLN("Profiles json for save: " + json);
   File file = LittleFS.open("/profiles_config.json", "w");
   file.print(json);
   file.close();
@@ -31,12 +32,16 @@ void putProfile(){
     return item.id == id;
   });
 
-  if(it == profiles.end()){
+  if (it == profiles.end()){
     server.send(404);
     return;
   }
 
+  DEBUG_PRINTLN("Rules count in doc: " + String(doc["rules"].as<JsonArray>().size()));
+
   it->fromJson(doc.as<JsonVariant>());
+
+  DEBUG_PRINTLN("Rules count in created object: " + String(it->rules.size()));
 
   saveProfilesConfig();
   server.send(202);
@@ -82,7 +87,7 @@ void loadProfilesConfig(){
   File file = LittleFS.open("/profiles_config.json", "r");
 
   if(!file){
-    Serial.println("Profiles config file not found");
+    DEBUG_PRINTLN("Profiles config file not found");
     return;
   }
 

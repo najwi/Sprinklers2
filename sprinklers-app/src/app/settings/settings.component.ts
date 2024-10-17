@@ -2,16 +2,21 @@ import { Component } from '@angular/core';
 import { Sprinkler } from './settings.dto';
 import { SprinklersStore } from './sprinklers.store';
 import { MatDialog } from '@angular/material/dialog';
-import { SprinklerModalComponent, SprinklerModalMode } from './sprinkler-modal/sprinkler-modal.component';
+import {
+	SprinklerModalComponent,
+	SprinklerModalMode,
+} from './sprinkler-modal/sprinkler-modal.component';
 
 @Component({
 	selector: 'app-settings',
 	templateUrl: './settings.component.html',
-	styleUrls: ['./settings.component.scss']
+	styleUrls: ['./settings.component.scss'],
 })
 export class SettingsComponent {
-	constructor(public readonly sprinklersStore: SprinklersStore, private readonly dialog: MatDialog) {
-	}
+	constructor(
+		public readonly sprinklersStore: SprinklersStore,
+		private readonly dialog: MatDialog,
+	) {}
 
 	editSprinkler(sprinkler: Sprinkler, $event: Event) {
 		$event.stopPropagation();

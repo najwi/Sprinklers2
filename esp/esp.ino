@@ -1,8 +1,19 @@
+//#define DEBUG
+
+#ifdef DEBUG
+  #define DEBUG_PRINT(x)  Serial.print(x)
+  #define DEBUG_PRINTLN(x) Serial.println(x)
+#else
+  #define DEBUG_PRINT(x)   // Do nothing
+  #define DEBUG_PRINTLN(x) // Do nothing
+#endif
+
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include "Sprinkler.h"
 #include <TimeLib.h>
@@ -11,43 +22,61 @@
 #include <ESP8266HTTPClient.h>
 
 ESP8266WebServer server(80);
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "tempus1.gum.gov.pl", 7200, 4 * 60 * 60 * 1000);
 
 #include "SprinklerApi.h"
 #include "ProfilesApi.h"
 
 const char* ssid = "TUX-NET";
 const char* password = "pebol77konto";
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "tempus1.gum.gov.pl", 0, 4 * 60 * 60 * 1000);
 
 void setup() {
+#ifdef DEBUG
   Serial.begin(115200);
+#endif
+
+  initPins();
 
   // Initialize LittleFS
   if (!LittleFS.begin()) {
-    Serial.println("Failed to mount file system");
+    DEBUG_PRINTLN("Failed to mount file system");
     return;
   }
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
-  Serial.print("\nConnecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-
-  Serial.println();
-  Serial.println("Connected to WiFi");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  WiFi.setAutoReconnect(true);
+  connectToWifi();
 
   defineRoutes();
   loadSprinklersConfig();
   loadProfilesConfig();
-  initTime();
+  timeClient.begin();
 
   server.begin();
+}
+
+void loop() {
+  connectToWifi();
+  timeClient.update();
+  server.handleClient();
+  updateSprinklers();
+}
+
+void connectToWifi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+
+  DEBUG_PRINT("\nConnecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    DEBUG_PRINT(".");
+  }
+
+  DEBUG_PRINTLN();
+  DEBUG_PRINTLN("Connected to WiFi");
+  DEBUG_PRINT("IP Address: ");
+  DEBUG_PRINTLN(WiFi.localIP());
 }
 
 void defineRoutes() {
@@ -60,6 +89,12 @@ void defineRoutes() {
   server.on("/api/profiles", HTTP_POST, postProfile);
   server.on("/api/profiles", HTTP_DELETE, deleteProfile);
   server.on("/api/profiles", HTTP_PUT, putProfile);
+  server.on("/api/time", HTTP_GET, getTime);
+}
+
+void getTime() {
+  int time = timeClient.getEpochTime() % 86400;
+  server.send(200, "text/plain", String(time));
 }
 
 // Function to determine the content type based on the file extension
@@ -81,7 +116,7 @@ void serveFile() {
     path = "/index.html";
   }
 
-  Serial.println("PATH = " + path);
+  DEBUG_PRINTLN("PATH = " + path);
 
   // Open the requested file from LittleFS
   File file = LittleFS.open(path, "r");
@@ -106,27 +141,121 @@ void serveFile() {
 
   delete[] buffer;
   file.close();
-  Serial.println("File served " + path);
+  DEBUG_PRINTLN("File served " + path);
 }
 
-void initTime() {
-  WiFiClientSecure client;
-  client.setInsecure();
-  HTTPClient http;
-  http.begin(client, "https://timeapi.io/api/timezone/zone?timeZone=Europe%2FWarsaw");
+void updateSprinklers() {
+  std::map<String, bool> map;
+  int time = timeClient.getEpochTime() % 86400;
+  bool saveChanges = false;
 
-  if (http.GET() == 200) {
-    String payload = http.getString();
-    JsonDocument doc;
-    deserializeJson(doc, payload);
-    int offset = doc["currentUtcOffset"]["seconds"].as<int>();
-    timeClient.setTimeOffset(offset);
+  for (const Sprinkler& sprinkler : sprinklers) {
+    map[sprinkler.id] = false;
   }
 
-  timeClient.begin();
+  for (Profile& profile : profiles) {
+    for (Rule& rule : profile.rules) {
+      // Automatic
+      if (profile.isActive && rule.isActive) {
+        if (rule.startTime < rule.endTime) {
+          if (rule.startTime <= time && rule.endTime > time) {
+            map[rule.sprinklerId] = true;
+          }
+        } else if (rule.startTime > rule.endTime) {
+          if (rule.startTime <= time || rule.endTime > time) {
+            map[rule.sprinklerId] = true;
+          }
+        }
+      }
+
+      // Manual
+      if (rule.manualStartTime != -1) {
+        int manualEndTime = (rule.manualStartTime + rule.manualDuration) % 86400;
+        if (rule.manualStartTime < manualEndTime) {
+          if (rule.manualStartTime <= time && manualEndTime > time) {
+            map[rule.sprinklerId] = true;
+          } else {
+            rule.manualStartTime = -1;
+            saveChanges = true;
+          }
+        } else {
+          if (rule.manualStartTime <= time || manualEndTime > time) {
+            map[rule.sprinklerId] = true;
+          } else {
+            rule.manualStartTime = -1;
+            saveChanges = true;
+          }
+        }
+      }
+    }
+  }
+
+  for (const Sprinkler& sprinkler : sprinklers) {
+    if (map[sprinkler.id]) {
+      DEBUG_PRINTLN("Turning ON " + String(sprinkler.pinNumber));
+      digitalWrite(getRealPin(sprinkler.pinNumber), LOW);
+    } else {
+      //DEBUG_PRINTLN("Turning OFF " + String(sprinkler.pinNumber));
+      digitalWrite(getRealPin(sprinkler.pinNumber), HIGH);
+    }
+  }
+
+  if (saveChanges) {
+    saveProfilesConfig();
+  }
 }
 
-void loop() {
-  timeClient.update();
-  server.handleClient();
+void initPins() {
+  pinMode(16, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(14, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(15, OUTPUT);
+  digitalWrite(16, HIGH);
+  digitalWrite(5, HIGH);
+  digitalWrite(4, HIGH);
+  digitalWrite(0, HIGH);
+  digitalWrite(2, HIGH);
+  digitalWrite(14, HIGH);
+  digitalWrite(12, HIGH);
+  digitalWrite(13, HIGH);
+  digitalWrite(15, HIGH);
+}
+
+int getRealPin(int pin) {
+  int real_pin = -1;
+  switch (pin) {
+    case 0:
+      real_pin = 16;
+      break;
+    case 1:
+      real_pin = 5;
+      break;
+    case 2:
+      real_pin = 4;
+      break;
+    case 3:
+      real_pin = 0;
+      break;
+    case 4:
+      real_pin = 2;
+      break;
+    case 5:
+      real_pin = 14;
+      break;
+    case 6:
+      real_pin = 12;
+      break;
+    case 7:
+      real_pin = 13;
+      break;
+    case 8:
+      real_pin = 15;
+      break;
+  }
+  return real_pin;
 }

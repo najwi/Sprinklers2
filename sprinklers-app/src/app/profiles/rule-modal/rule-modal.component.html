@@ -18,9 +18,9 @@
 				<mat-label>Zraszacz</mat-label>
 				<mat-select [formControlName]="fields.sprinklerId">
 					@for (sprinkler of sprinklers$ | async; track sprinkler) {
-					<mat-option [value]="sprinkler.id">{{
-						sprinkler.name
-					}}</mat-option>
+						<mat-option [value]="sprinkler.id">{{
+							sprinkler.name
+						}}</mat-option>
 					}
 				</mat-select>
 			</mat-form-field>
@@ -59,7 +59,7 @@
 
 			<mat-form-field>
 				<mat-label>Czas ręczny (minuty)</mat-label>
-				<input matInput [formControlName]="fields.manualTime" />
+				<input matInput [formControlName]="fields.manualDuration" />
 			</mat-form-field>
 
 			<mat-checkbox [formControlName]="fields.isActive"
@@ -69,7 +69,9 @@
 	</mat-dialog-content>
 	<mat-dialog-actions [align]="'end'">
 		@if (mode === modes.Edit) {
-		<button mat-stroked-button color="warn" (click)="delete()">Usuń</button>
+			<button mat-stroked-button color="warn" (click)="delete()">
+				Usuń
+			</button>
 		}
 		<button mat-stroked-button color="primary" mat-dialog-close>
 			Anuluj
