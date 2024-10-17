@@ -1,24 +1,51 @@
 <div class="modal-md">
-    <h2 mat-dialog-title>{{ title }}</h2>
-    <mat-dialog-content>
-        <form [formGroup]="form" class="d-flex flex-column">
-            <mat-form-field>
-                <mat-label>Nazwa</mat-label>
-                <input matInput [formControlName]="fields.name" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>Numer pinu</mat-label>
-                <input matInput type="number" [formControlName]="fields.pinNumber" />
-            </mat-form-field>
-        </form>
-    </mat-dialog-content>
-    <mat-dialog-actions [align]="'end'">
-        @if (mode===modes.Edit) {
-        <button mat-stroked-button color="warn" (click)="delete()">Usuń</button>
-        }
-        <button mat-stroked-button color="primary" mat-dialog-close>
-            Anuluj
-        </button>
-        <button mat-raised-button color="accent" (click)="save()">Zapisz</button>
-    </mat-dialog-actions>
+	<h2 mat-dialog-title>{{ title }}</h2>
+	<mat-dialog-content>
+		<form [formGroup]="form" class="d-flex flex-column">
+			<mat-form-field>
+				<mat-label>Nazwa</mat-label>
+				<input matInput [formControlName]="fields.name" />
+			</mat-form-field>
+			<mat-form-field>
+				<mat-label>Numer pinu</mat-label>
+				<input
+					matInput
+					type="number"
+					[formControlName]="fields.pinNumber"
+				/>
+				@if (form.get(fields.pinNumber)?.invalid) {
+					<mat-error
+						>Numer pinu musi być unikatową wartością od 0 do
+						8</mat-error
+					>
+				}
+			</mat-form-field>
+		</form>
+	</mat-dialog-content>
+	<mat-dialog-actions [align]="'end'">
+		@if (mode === modes.Edit) {
+			<div
+				[matTooltip]="
+					disableDelete
+						? 'Nie można usunąć zraszacza ponieważ co najmniej jedna reguła z niego korzysta'
+						: ''
+				"
+			>
+				<button
+					mat-stroked-button
+					color="warn"
+					(click)="delete()"
+					[disabled]="disableDelete"
+				>
+					Usuń
+				</button>
+			</div>
+		}
+		<button mat-stroked-button color="primary" mat-dialog-close>
+			Anuluj
+		</button>
+		<button mat-raised-button color="accent" (click)="save()">
+			Zapisz
+		</button>
+	</mat-dialog-actions>
 </div>

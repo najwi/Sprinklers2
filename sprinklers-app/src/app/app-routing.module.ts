@@ -6,7 +6,7 @@ import { SettingsComponent } from './settings/settings.component';
 const routes: Routes = [
 	{ path: '', component: ProfilesComponent },
 	{ path: 'settings', component: SettingsComponent },
-	{ path: '**', redirectTo: ''}
+	{ path: '**', redirectTo: '' },
 ];
 
 @NgModule({

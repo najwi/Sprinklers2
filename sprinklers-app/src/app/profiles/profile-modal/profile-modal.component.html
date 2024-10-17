@@ -12,8 +12,10 @@
 		</form>
 	</mat-dialog-content>
 	<mat-dialog-actions [align]="'end'">
-		@if (mode===modes.Edit) {
-		<button mat-stroked-button color="warn" (click)="delete()">Usuń</button>
+		@if (mode === modes.Edit) {
+			<button mat-stroked-button color="warn" (click)="delete()">
+				Usuń
+			</button>
 		}
 		<button mat-stroked-button color="primary" mat-dialog-close>
 			Anuluj

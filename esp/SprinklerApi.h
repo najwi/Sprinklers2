@@ -26,7 +26,7 @@ void putSprinkler(){
     return item.id == id;
   });
 
-  if(it == sprinklers.end()){
+  if (it == sprinklers.end()){
     server.send(404);
     return;
   }
@@ -36,6 +36,7 @@ void putSprinkler(){
   deserializeJson(doc, body);
 
   it->fromJson(doc.as<JsonVariant>());
+  it->id = id;
 
   saveSprinklersConfig();
   server.send(202);
@@ -81,7 +82,7 @@ void loadSprinklersConfig(){
   File file = LittleFS.open("/sprinklers_config.json", "r");
 
   if(!file){
-    Serial.println("Sprinklers config file not found");
+    DEBUG_PRINTLN("Sprinklers config file not found");
     return;
   }
 

@@ -1,8 +1,16 @@
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+@import "colors.scss";
+
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 .hide-on-xs {
-    @media (max-width: 576px) {
+	@media (max-width: 576px) {
 		display: none;
 	}
 }
@@ -13,9 +21,15 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .timepicker-overlay {
-    z-index: 10000000 !important;
+	z-index: 10000000 !important;
 }
 
 .timepicker-backdrop-overlay {
-    z-index: 10000000 !important;
+	z-index: 10000000 !important;
+}
+
+.warning-bg {
+	--mdc-snackbar-container-color: #f44336;
+	--mat-snack-bar-button-color: white;
+	--mdc-snackbar-supporting-text-color: white;
 }

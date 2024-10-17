@@ -1,30 +1,46 @@
 <h1>Ustawienia</h1>
 <h3>Definicje zraszaczy</h3>
-<table class="table">
-  <thead class="thead">
-    <tr>
-      <th>Nazwa</th>
-      <th>Pin</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (sprinkler of sprinklersStore.items$ | async; track sprinkler) {
-    <tr>
-      <td>{{ sprinkler.name }}</td>
-      <td>{{ sprinkler.pinNumber }}</td>
-      <td>
-        <button mat-icon-button color="primary" matTooltip="Edytuj" (click)="editSprinkler(sprinkler, $event)">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </td>
-    </tr>
-    }
-  </tbody>
-</table>
+@if (sprinklersStore.items$ | async; as sprinklers) {
+	@if (sprinklers.length > 0) {
+		<table class="table">
+			<thead class="thead">
+				<tr>
+					<th>Nazwa</th>
+					<th>Pin</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@for (sprinkler of sprinklers; track sprinkler) {
+					<tr>
+						<td>{{ sprinkler.name }}</td>
+						<td>{{ sprinkler.pinNumber }}</td>
+						<td>
+							<button
+								mat-icon-button
+								color="primary"
+								matTooltip="Edytuj"
+								(click)="editSprinkler(sprinkler, $event)"
+							>
+								<mat-icon>edit</mat-icon>
+							</button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	} @else {
+		<h4>Brak zraszaczy</h4>
+	}
+}
 <div class="d-flex justify-content-end w-100 me-2">
-  <button mat-stroked-button color="primary" class="mx-1" (click)="addSprinkler()">
-    <mat-icon>add</mat-icon>
-    Dodaj zraszacz
-  </button>
+	<button
+		mat-stroked-button
+		color="primary"
+		class="mx-1"
+		(click)="addSprinkler()"
+	>
+		<mat-icon>add</mat-icon>
+		Dodaj zraszacz
+	</button>
 </div>

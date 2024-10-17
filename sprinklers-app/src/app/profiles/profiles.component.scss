@@ -1,6 +1,7 @@
-td, th {
+td,
+th {
 	vertical-align: middle;
-    padding: 0.4rem;
+	padding: 0.4rem;
 
 	@media (max-width: 576px) {
 		padding: 1px;
@@ -8,7 +9,7 @@ td, th {
 }
 
 ::ng-deep .mat-expansion-panel-body {
-    @media (max-width: 576px) {
+	@media (max-width: 576px) {
 		padding-left: 1px !important;
 		padding-right: 1px !important;
 		padding-bottom: 0.25rem;

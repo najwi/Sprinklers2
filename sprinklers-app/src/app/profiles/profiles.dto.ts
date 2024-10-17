@@ -9,8 +9,8 @@ export interface Rule {
 	sprinklerId: string;
 	name: string;
 	isActive: boolean;
-	startTime: string;
-	endTime: string;
-	isManualOn: boolean;
-	manualTime: string;
+	startTime: number; //seconds
+	endTime: number; //seconds
+	manualStartTime: number; //seconds -1=off, -2=signal to set on
+	manualDuration: number; //seconds
 }

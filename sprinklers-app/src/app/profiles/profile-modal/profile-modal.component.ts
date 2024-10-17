@@ -1,26 +1,22 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject } from "@angular/core";
 import {
 	MAT_DIALOG_DATA,
 	MatDialog,
 	MatDialogRef,
-} from '@angular/material/dialog';
-import { Profile } from '../profiles.dto';
-import {
-	FormBuilder,
-	FormGroup,
-	Validators,
-} from '@angular/forms';
+} from "@angular/material/dialog";
+import { Profile } from "../profiles.dto";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import {
 	ConfirmationModalComponent,
 	ConfirmationModalData,
-} from 'src/app/shared/confirmation-modal/confirmation-modal.component';
-import { v4 as uuidv4 } from 'uuid';
-import { ProfilesStore } from '../profiles.store';
+} from "src/app/shared/confirmation-modal/confirmation-modal.component";
+import { v4 as uuidv4 } from "uuid";
+import { ProfilesStore } from "../profiles.store";
 
 @Component({
-	selector: 'app-profile-modal',
-	templateUrl: './profile-modal.component.html',
-	styleUrls: ['./profile-modal.component.scss'],
+	selector: "app-profile-modal",
+	templateUrl: "./profile-modal.component.html",
+	styleUrls: ["./profile-modal.component.scss"],
 })
 export class ProfileModalComponent {
 	modes = PorfileModalMode;
@@ -35,28 +31,29 @@ export class ProfileModalComponent {
 		private dialogRef: MatDialogRef<ProfileModalComponent>,
 		private fb: FormBuilder,
 		private dialog: MatDialog,
-		private profilesStore: ProfilesStore
+		private profilesStore: ProfilesStore,
 	) {
 		this.mode = data.mode;
 
 		this.title =
 			this.mode === PorfileModalMode.Add
-				? 'Dodaj profil'
-				: 'Edytuj profil';
+				? "Dodaj profil"
+				: "Edytuj profil";
 
 		this.form = fb.group({
 			[FormField.name]: fb.control(
 				data.profile?.name,
-				Validators.required
+				Validators.required,
 			),
 			[FormField.isActive]: fb.control(
 				data.profile?.isActive ?? false,
-				Validators.required
+				Validators.required,
 			),
 		});
 	}
 
 	save() {
+		this.form.markAllAsTouched();
 		if (!this.form.valid) return;
 
 		if (this.mode === PorfileModalMode.Add) {
@@ -64,22 +61,26 @@ export class ProfileModalComponent {
 				id: uuidv4(),
 				isActive: this.form.get(FormField.isActive)!.value,
 				name: this.form.get(FormField.name)!.value,
-				rules: []
-			}
-			this.profilesStore.create(profile).subscribe(x => this.dialogRef.close());
+				rules: [],
+			};
+			this.profilesStore
+				.create(profile)
+				.subscribe((x) => this.dialogRef.close());
 		} else {
 			const profile = this.data.profile!;
 			profile.isActive = this.form.get(FormField.isActive)!.value;
 			profile.name = this.form.get(FormField.name)!.value;
-			this.profilesStore.edit(profile).subscribe(x => this.dialogRef.close());
+			this.profilesStore
+				.edit(profile)
+				.subscribe((x) => this.dialogRef.close());
 		}
 	}
 
 	delete(): void {
 		const data: ConfirmationModalData = {
 			content: `Czy na pewno chcesz usunąć profil "${this.data.profile?.name}"`,
-			confirmationColor: 'warn',
-			title: 'Usuń profil',
+			confirmationColor: "warn",
+			title: "Usuń profil",
 		};
 
 		this.dialog
@@ -89,7 +90,9 @@ export class ProfileModalComponent {
 			.afterClosed()
 			.subscribe((result) => {
 				if (result) {
-					this.profilesStore.delete(this.data.profile!.id).subscribe(x => this.dialogRef.close());
+					this.profilesStore
+						.delete(this.data.profile!.id)
+						.subscribe((x) => this.dialogRef.close());
 				}
 			});
 	}
@@ -101,6 +104,6 @@ export enum PorfileModalMode {
 }
 
 enum FormField {
-	name = 'name',
-	isActive = 'isActive',
+	name = "name",
+	isActive = "isActive",
 }

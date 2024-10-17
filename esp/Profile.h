@@ -7,30 +7,33 @@ struct Rule {
   String sprinklerId;
   String name;
   bool isActive;
-  String startTime;
-  String endTime;
-  bool isManualOn;
-  String manualTime;
+  int startTime;
+  int endTime;
+  int manualStartTime;
+  int manualDuration;
 
   void fromJson(const JsonVariant doc) {
     sprinklerId = doc["sprinklerId"].as<String>();
     name = doc["name"].as<String>();
     isActive = doc["isActive"].as<bool>();
-    startTime = doc["startTime"].as<String>();
-    endTime = doc["endTime"].as<String>();
-    isManualOn = doc["isManualOn"].as<bool>();
-    manualTime = doc["manualTime"].as<String>();
+    startTime = doc["startTime"].as<int>();
+    endTime = doc["endTime"].as<int>();
+    manualDuration = doc["manualDuration"].as<int>();
+    manualStartTime = doc["manualStartTime"].as<int>();
+    if (manualStartTime == -2) {
+      manualStartTime = timeClient.getEpochTime() % 86400;
+    }
   }
 
   void addToArray(JsonArray array) const {
     JsonObject obj = array.add<JsonObject>();
-    obj["SprinklerId"] = sprinklerId;
+    obj["sprinklerId"] = sprinklerId;
     obj["name"] = name;
     obj["isActive"] = isActive;
     obj["startTime"] = startTime;
     obj["endTime"] = endTime;
-    obj["isManualOn"] = isManualOn;
-    obj["manualTime"] = manualTime;
+    obj["manualStartTime"] = manualStartTime;
+    obj["manualDuration"] = manualDuration;
   }
 };
 
@@ -45,6 +48,7 @@ struct Profile {
     name = doc["name"].as<String>();
     isActive = doc["isActive"].as<bool>();
 
+    rules.clear();
     for (JsonVariant ruleDoc : doc["rules"].as<JsonArray>()) {
       Rule rule;
       rule.fromJson(ruleDoc);

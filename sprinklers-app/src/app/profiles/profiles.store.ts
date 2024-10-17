@@ -5,52 +5,65 @@ import { Profile } from "./profiles.dto";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Injectable({
-    providedIn: 'root'
+	providedIn: "root",
 })
 export class ProfilesStore {
-    readonly items$: Observable<Profile[]>;
-    private readonly itemsSubject: BehaviorSubject<Profile[]>;
+	readonly items$: Observable<Profile[]>;
+	private readonly itemsSubject: BehaviorSubject<Profile[]>;
 
-    constructor(private readonly api: ApiService, private readonly snackBar: MatSnackBar) {
-        this.itemsSubject = new BehaviorSubject<Profile[]>([]);
-        this.items$ = this.itemsSubject.asObservable();
-        this.api.getProfiles().subscribe(items => this.itemsSubject.next(items));
-    }
+	constructor(
+		private readonly api: ApiService,
+		private readonly snackBar: MatSnackBar,
+	) {
+		this.itemsSubject = new BehaviorSubject<Profile[]>([]);
+		this.items$ = this.itemsSubject.asObservable();
+		this.updateItems();
+	}
 
-    get items(): Profile[] {
-        return this.itemsSubject.value;
-    }
+	private updateItems() {
+		this.api
+			.getProfiles()
+			.subscribe((items) => this.itemsSubject.next(items));
+	}
 
-    delete(id: string): Observable<void> {
-        return this.api.deleteProfile(id).pipe(
-            tap(() => {
-                this.itemsSubject.next(this.items.filter(x => x.id !== id));
-                this.showSuccess();
-            })
-        );
-    }
+	get items(): Profile[] {
+		return this.itemsSubject.value;
+	}
 
-    create(profile: Profile): Observable<void> {
-        return this.api.postProfile(profile).pipe(
-            tap(() => {
-                this.itemsSubject.next([...this.items, profile]);
-                this.showSuccess();
-            })
-        )
-    }
+	delete(id: string): Observable<void> {
+		return this.api.deleteProfile(id).pipe(
+			tap(() => {
+				this.itemsSubject.next(this.items.filter((x) => x.id !== id));
+				this.showSuccess();
+			}),
+		);
+	}
 
-    edit(profile: Profile): Observable<void> {
-        return this.api.putProfile(profile).pipe(
-            tap(() => {
-                const index = this.items.findIndex(x => x.id === profile.id)
-                this.items[index] = profile;
-                this.itemsSubject.next(this.items);
-                this.showSuccess();
-            })
-        )
-    }
+	create(profile: Profile): Observable<void> {
+		return this.api.postProfile(profile).pipe(
+			tap(() => {
+				this.itemsSubject.next([...this.items, profile]);
+				this.showSuccess();
+			}),
+		);
+	}
 
-    private showSuccess() {
-        this.snackBar.open("Akcja wykonana pomyślnie", "OK", {duration: 5000});
-    }
+	edit(profile: Profile, updateItems: boolean = false): Observable<void> {
+		return this.api.putProfile(profile).pipe(
+			tap(() => {
+				const index = this.items.findIndex((x) => x.id === profile.id);
+				this.items[index] = profile;
+				this.itemsSubject.next(this.items);
+				this.showSuccess();
+
+				if (updateItems) this.updateItems();
+			}),
+		);
+	}
+
+	private showSuccess() {
+		this.snackBar.open("Akcja wykonana pomyślnie", "OK", {
+			duration: 5000,
+		});
+	}
 }
