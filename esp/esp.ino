@@ -131,6 +131,10 @@ void serveFile() {
 
   DEBUG_PRINTLN("PATH = " + path);
 
+  if (!path.endsWith("index.html")){
+    server.sendHeader("Cache-Control", "public, max-age=31536000"); // 1 year cache
+  }
+
   String contentType = getContentType(path);
   
   if (LittleFS.exists(path+".gz")){
