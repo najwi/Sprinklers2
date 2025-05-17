@@ -1,4 +1,5 @@
-//#define DEBUG
+#define DEBUG
+#define DEBUG_NTPClient
 
 #ifdef DEBUG
   #define DEBUG_PRINT(x)  Serial.print(x)
@@ -20,6 +21,7 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 #include <ESP8266HTTPClient.h>
+#include "Secrets.h"
 
 ESP8266WebServer server(80);
 WiFiUDP ntpUDP;
@@ -28,13 +30,14 @@ NTPClient timeClient(ntpUDP, "tempus1.gum.gov.pl", 7200, 4 * 60 * 60 * 1000);
 #include "SprinklerApi.h"
 #include "ProfilesApi.h"
 
-const char* ssid = "TUX-NET";
-const char* password = "REDACTED";
+const int reconnectRetryTimeout = 10;
 
 void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
+  DEBUG_PRINTLN();
+  DEBUG_PRINTLN("Starting");
 
   initPins();
 
@@ -45,8 +48,7 @@ void setup() {
   }
 
   // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  WiFi.setAutoReconnect(true);
+  WiFi.begin(SSID, PASSWORD);
   connectToWifi();
 
   defineRoutes();
@@ -66,17 +68,28 @@ void loop() {
 
 void connectToWifi() {
   if (WiFi.status() == WL_CONNECTED) return;
-
+  
   DEBUG_PRINT("\nConnecting to WiFi");
+  
+  int retryCount = 0;
+  
   while (WiFi.status() != WL_CONNECTED) {
+    if (retryCount == reconnectRetryTimeout && timeClient.isTimeSet()){
+      DEBUG_PRINTLN("\nReconnect timeout reached, continuing without wifi connection");
+      return;
+    }
     delay(1000);
     DEBUG_PRINT(".");
+    retryCount++;
   }
 
   DEBUG_PRINTLN();
   DEBUG_PRINTLN("Connected to WiFi");
   DEBUG_PRINT("IP Address: ");
   DEBUG_PRINTLN(WiFi.localIP());
+#ifdef DEBUG
+  WiFi.printDiag(Serial);
+#endif
 }
 
 void defineRoutes() {
@@ -118,6 +131,14 @@ void serveFile() {
 
   DEBUG_PRINTLN("PATH = " + path);
 
+  String contentType = getContentType(path);
+  
+  if (LittleFS.exists(path+".gz")){
+    path = path + ".gz";
+    server.sendHeader("Content-Encoding", "gzip");
+    DEBUG_PRINTLN("Setting .gz path = " + path);
+  }
+
   // Open the requested file from LittleFS
   File file = LittleFS.open(path, "r");
 
@@ -126,7 +147,6 @@ void serveFile() {
     return;
   }
 
-  String contentType = getContentType(path);
   const size_t bufferSize = 4096;
   uint8_t* buffer = new uint8_t[bufferSize];
 
@@ -215,6 +235,10 @@ void initPins() {
   pinMode(12, OUTPUT);
   pinMode(13, OUTPUT);
   pinMode(15, OUTPUT);
+  disableAllPins();
+}
+
+void disableAllPins(){
   digitalWrite(16, HIGH);
   digitalWrite(5, HIGH);
   digitalWrite(4, HIGH);
