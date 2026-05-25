@@ -1,5 +1,5 @@
-#define DEBUG
-#define DEBUG_NTPClient
+//#define DEBUG
+//#define DEBUG_NTPClient
 
 #ifdef DEBUG
   #define DEBUG_PRINT(x)  Serial.print(x)
@@ -170,7 +170,9 @@ void serveFile() {
 
 void updateSprinklers() {
   std::map<String, bool> map;
-  int time = timeClient.getEpochTime() % 86400;
+  unsigned long epoch = timeClient.getEpochTime();
+  int time = epoch % 86400;
+  int epochDay = epoch / 86400;
   bool saveChanges = false;
 
   for (const Sprinkler& sprinkler : sprinklers) {
@@ -181,13 +183,16 @@ void updateSprinklers() {
     for (Rule& rule : profile.rules) {
       // Automatic
       if (profile.isActive && rule.isActive) {
-        if (rule.startTime < rule.endTime) {
-          if (rule.startTime <= time && rule.endTime > time) {
-            map[rule.sprinklerId] = true;
-          }
-        } else if (rule.startTime > rule.endTime) {
-          if (rule.startTime <= time || rule.endTime > time) {
-            map[rule.sprinklerId] = true;
+        bool dayOk = rule.dayInterval <= 1 || (epochDay % rule.dayInterval == 0);
+        if (dayOk) {
+          if (rule.startTime < rule.endTime) {
+            if (rule.startTime <= time && rule.endTime > time) {
+              map[rule.sprinklerId] = true;
+            }
+          } else if (rule.startTime > rule.endTime) {
+            if (rule.startTime <= time || rule.endTime > time) {
+              map[rule.sprinklerId] = true;
+            }
           }
         }
       }

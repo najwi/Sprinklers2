@@ -77,6 +77,10 @@ export class RuleModalComponent {
 				data.rule?.manualDuration ? data.rule.manualDuration / 60 : 5,
 				[Validators.required, Validators.min(1)],
 			),
+			[FormField.dayInterval]: fb.control(
+				data.rule?.dayInterval ?? 1,
+				[Validators.required, Validators.min(1)],
+			),
 		});
 
 		this.form
@@ -111,6 +115,7 @@ export class RuleModalComponent {
 			name: this.form.get(FormField.name)!.value,
 			sprinklerId: this.form.get(FormField.sprinklerId)!.value,
 			manualStartTime: this.data.rule?.manualStartTime ?? -1,
+			dayInterval: this.form.get(FormField.dayInterval)!.value,
 		};
 
 		const profile = this.data.profile!;
@@ -170,6 +175,7 @@ export enum FormField {
 	startTime = "startTime",
 	endTime = "endTime",
 	manualDuration = "manualDuration",
+	dayInterval = "dayInterval",
 }
 
 export enum RuleModalMode {

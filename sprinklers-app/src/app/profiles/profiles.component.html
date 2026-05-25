@@ -33,7 +33,7 @@
 			@if (profile.rules.length === 0) {
 				<h5>Brak reguł</h5>
 			} @else {
-				<table class="table w-100">
+				<table class="table w-100 d-none d-sm-table">
 					<thead>
 						<tr>
 							<th style="width: 1px; white-space: nowrap"></th>
@@ -74,6 +74,15 @@
 										<div class="d-block d-sm-inline">
 											{{ calculateTimeDiff(rule) }}min
 										</div>
+										@if ((rule.dayInterval ?? 1) >= 2) {
+											<div class="d-block d-sm-inline ms-sm-2">
+												co {{ rule.dayInterval }} dni
+											</div>
+										} @else {
+											<div class="d-block d-sm-inline ms-sm-2">
+												codziennie
+											</div>
+										}
 									</div>
 								</td>
 								<td>
@@ -130,6 +139,61 @@
 						}
 					</tbody>
 				</table>
+				<div class="d-sm-none">
+					@for (
+						rule of profile.rules;
+						track rule;
+						let idx = $index
+					) {
+						<div class="rule-card">
+							<div class="d-flex align-items-center">
+								<mat-checkbox
+									[checked]="rule.isActive"
+									(click)="ruleCheckboxClicked(profile, idx, $event)"
+								></mat-checkbox>
+								<span class="ms-2">{{ rule.name }}</span>
+							</div>
+							<div class="rule-card-time mt-1">
+								{{ toTime(rule.startTime) }}-{{ toTime(rule.endTime) }}
+								&nbsp;{{ calculateTimeDiff(rule) }}min
+								@if ((rule.dayInterval ?? 1) >= 2) {
+									&nbsp;co {{ rule.dayInterval }} dni
+								} @else {
+									&nbsp;codziennie
+								}
+							</div>
+							<div class="d-flex justify-content-end">
+								@if (rule.manualStartTime === -1) {
+									<button
+										mat-icon-button
+										color="primary"
+										matTooltip="Włącz ręcznie"
+										(click)="setManualOn(profile, idx, $event)"
+									>
+										<mat-icon>play_arrow</mat-icon>
+									</button>
+								} @else {
+									<button
+										mat-icon-button
+										color="warn"
+										matTooltip="Wyłącz ręcznie"
+										(click)="setManualOff(profile, idx, $event)"
+									>
+										<mat-icon>stop</mat-icon>
+									</button>
+								}
+								<button
+									mat-icon-button
+									color="primary"
+									matTooltip="Edytuj"
+									(click)="openEditRuleModal(rule, profile, idx, $event)"
+								>
+									<mat-icon>edit</mat-icon>
+								</button>
+							</div>
+						</div>
+					}
+				</div>
 			}
 			<div class="d-flex justify-content-end w-100 mt-1 mt-sm-2">
 				<button
