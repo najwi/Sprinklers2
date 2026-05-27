@@ -183,7 +183,7 @@ void updateSprinklers() {
     for (Rule& rule : profile.rules) {
       // Automatic
       if (profile.isActive && rule.isActive) {
-        bool dayOk = rule.dayInterval <= 1 || (epochDay % rule.dayInterval == 0);
+        bool dayOk = rule.dayInterval <= 1 || ((epochDay + rule.dayIntervalOffset) % rule.dayInterval == 0);
         if (dayOk) {
           if (rule.startTime < rule.endTime) {
             if (rule.startTime <= time && rule.endTime > time) {
