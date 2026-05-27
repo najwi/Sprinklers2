@@ -20,6 +20,7 @@ const profiles = [
 				manualStartTime: -1,
 				manualDuration: 600,
 				dayInterval: 1,
+				dayIntervalOffset: 0,
 			},
 			{
 				sprinklerId: 'a1b2c3d4-0000-0000-0000-000000000002',
@@ -30,6 +31,7 @@ const profiles = [
 				manualStartTime: -1,
 				manualDuration: 600,
 				dayInterval: 2,
+				dayIntervalOffset: 1,
 			},
 		],
 	},

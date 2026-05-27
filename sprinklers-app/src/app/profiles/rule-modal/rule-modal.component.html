@@ -62,10 +62,17 @@
 				<input matInput [formControlName]="fields.manualDuration" />
 			</mat-form-field>
 
-			<mat-form-field>
-				<mat-label>Co ile dni</mat-label>
-				<input matInput type="number" min="1" [formControlName]="fields.dayInterval" />
-			</mat-form-field>
+			<div class="row">
+				<mat-form-field class="col-6">
+					<mat-label>Co ile dni</mat-label>
+					<input matInput type="number" min="1" [formControlName]="fields.dayInterval" />
+				</mat-form-field>
+
+				<mat-form-field class="col-6">
+					<mat-label>Przesunięcie (dni)</mat-label>
+					<input matInput type="number" min="0" [formControlName]="fields.dayIntervalOffset" />
+				</mat-form-field>
+			</div>
 
 			<mat-checkbox [formControlName]="fields.isActive"
 				>Aktywny</mat-checkbox

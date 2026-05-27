@@ -12,6 +12,7 @@ struct Rule {
   int manualStartTime;
   int manualDuration;
   int dayInterval;
+  int dayIntervalOffset;
 
   void fromJson(const JsonVariant doc) {
     sprinklerId = doc["sprinklerId"].as<String>();
@@ -22,6 +23,7 @@ struct Rule {
     manualDuration = doc["manualDuration"].as<int>();
     manualStartTime = doc["manualStartTime"].as<int>();
     dayInterval = doc["dayInterval"] | 1;
+    dayIntervalOffset = doc["dayIntervalOffset"] | 0;
     if (manualStartTime == -2) {
       manualStartTime = timeClient.getEpochTime() % 86400;
     }
@@ -37,6 +39,7 @@ struct Rule {
     obj["manualStartTime"] = manualStartTime;
     obj["manualDuration"] = manualDuration;
     obj["dayInterval"] = dayInterval;
+    obj["dayIntervalOffset"] = dayIntervalOffset;
   }
 };
 

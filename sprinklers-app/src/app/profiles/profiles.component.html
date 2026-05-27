@@ -76,7 +76,7 @@
 										</div>
 										@if ((rule.dayInterval ?? 1) >= 2) {
 											<div class="d-block d-sm-inline ms-sm-2">
-												co {{ rule.dayInterval }} dni
+												co {{ rule.dayInterval }} dni{{ rule.dayIntervalOffset ? ' (+' + rule.dayIntervalOffset + ')' : '' }}
 											</div>
 										} @else {
 											<div class="d-block d-sm-inline ms-sm-2">
@@ -157,7 +157,7 @@
 								{{ toTime(rule.startTime) }}-{{ toTime(rule.endTime) }}
 								&nbsp;{{ calculateTimeDiff(rule) }}min
 								@if ((rule.dayInterval ?? 1) >= 2) {
-									&nbsp;co {{ rule.dayInterval }} dni
+									&nbsp;co {{ rule.dayInterval }} dni{{ rule.dayIntervalOffset ? ' (+' + rule.dayIntervalOffset + ')' : '' }}
 								} @else {
 									&nbsp;codziennie
 								}

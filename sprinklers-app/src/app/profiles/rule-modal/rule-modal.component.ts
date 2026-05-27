@@ -81,7 +81,38 @@ export class RuleModalComponent {
 				data.rule?.dayInterval ?? 1,
 				[Validators.required, Validators.min(1)],
 			),
+			[FormField.dayIntervalOffset]: fb.control(
+				data.rule?.dayIntervalOffset ?? 0,
+				[Validators.required, Validators.min(0)],
+			),
 		});
+
+		const applyOffsetState = (dayInterval: number) => {
+			const offsetControl = this.form.get(FormField.dayIntervalOffset)!;
+			if (dayInterval <= 1) {
+				offsetControl.setValue(0, { emitEvent: false });
+				offsetControl.disable({ emitEvent: false });
+			} else {
+				offsetControl.enable({ emitEvent: false });
+				offsetControl.setValidators([
+					Validators.required,
+					Validators.min(0),
+					Validators.max(dayInterval - 1),
+				]);
+				if (offsetControl.value > dayInterval - 1) {
+					offsetControl.setValue(dayInterval - 1, { emitEvent: false });
+				}
+				offsetControl.updateValueAndValidity({ emitEvent: false });
+			}
+		};
+
+		applyOffsetState(data.rule?.dayInterval ?? 1);
+
+		this.form
+			.get(FormField.dayInterval)
+			?.valueChanges.subscribe((value) => {
+				applyOffsetState(value);
+			});
 
 		this.form
 			.get(FormField.sprinklerId)
@@ -116,6 +147,7 @@ export class RuleModalComponent {
 			sprinklerId: this.form.get(FormField.sprinklerId)!.value,
 			manualStartTime: this.data.rule?.manualStartTime ?? -1,
 			dayInterval: this.form.get(FormField.dayInterval)!.value,
+			dayIntervalOffset: this.form.get(FormField.dayIntervalOffset)!.value ?? 0,
 		};
 
 		const profile = this.data.profile!;
@@ -176,6 +208,7 @@ export enum FormField {
 	endTime = "endTime",
 	manualDuration = "manualDuration",
 	dayInterval = "dayInterval",
+	dayIntervalOffset = "dayIntervalOffset",
 }
 
 export enum RuleModalMode {
